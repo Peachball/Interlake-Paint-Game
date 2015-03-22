@@ -6,7 +6,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class Board {
@@ -16,6 +15,7 @@ public class Board {
     public static final Color color2 = Color.GREEN;
     public static final Color color3 = Color.ORANGE;
     public static final Color color4 = Color.YELLOW;
+    public int SPEED = 10;
     
     public Frame frame;
     byte[][] colors;
@@ -31,6 +31,7 @@ public class Board {
         Player buffer = new Player(10, 10, mode, mode);
         buffer.color = 1;
         frame.addKeyListener(buffer);
+        new Thread(buffer).start();
         players.add(buffer);
     }
     
@@ -48,19 +49,10 @@ public class Board {
     }
     
     public void update() {
-        Collections.sort(players, new PlayerComparator());
-        for (Player i : players) {
-            for (int counterX = i.xPos - i.width; counterX < i.xPos + i.width; counterX++) {
-                for (int counterY = i.yPos - i.width; counterY < i.yPos + i.width; counterY++) {
-                    if (counterX < 0 || counterY < 0) {
-                        continue;
-                    }
-                    if (Math.sqrt(Math.pow(counterX - i.xPos, 2) + Math.pow(counterY - i.yPos, 2)) < i.width) {
-                        colors[counterX][counterY] = i.color;
-                    }
-                }
-            }
-        }
+//        Collections.sort(players, new PlayerComparator());
+//        for (Player i : players) {
+//            i.nextIteration(1);
+//        }
     }
     
     public void draw() {
@@ -98,7 +90,7 @@ public class Board {
         
     }
     
-    class Player implements KeyListener, MouseListener {
+    class Player implements KeyListener, MouseListener, Runnable {
         
         int xPos;
         int yPos;
@@ -106,14 +98,20 @@ public class Board {
         int score;
         short mode;
         int width;
+        int speedX;
+        int speedY;
         int speed;
+        boolean UP;
+        boolean RIGHT;
+        boolean DOWN;
+        boolean LEFT;
         
         public Player(int xPos, int yPos, byte color, short mode) {
             this.xPos = xPos;
             this.yPos = yPos;
             this.color = color;
             this.mode = mode;
-            speed = 5;
+            speed = 1;
             width = 10;
             score = 0;
         }
@@ -122,11 +120,46 @@ public class Board {
             if (xPos + x < 0 || yPos + y < 0) {
                 return;
             }
-            if(xPos+x>colors.length||yPos+y>colors[0].length){
+            if (xPos + x > colors.length || yPos + y > colors[0].length) {
                 return;
             }
             xPos += x;
             yPos += y;
+        }
+        
+        public void addVelocity(int x, int y) {
+            speedX += x;
+            speedY += y;
+        }
+        
+        public void nextIteration(int time) {
+            if (UP) {
+                addVelocity(0, -speed);
+            }
+            if (RIGHT) {
+                addVelocity(speed, 0);
+            }
+            if (LEFT) {
+                addVelocity(-speed, 0);
+            }
+            if (DOWN) {
+                addVelocity(0, speed);
+            }
+            for (int counter = 0; counter < time; counter++) {
+                shift(speedX, speedY);
+                for (int counterX = xPos - width; counterX < xPos + width; counterX++) {
+                    for (int counterY = yPos - width; counterY < yPos + width; counterY++) {
+                        if (counterX > colors.length || counterY > colors[0].length || counterX < 0 || counterY < 0) {
+                            continue;
+                        }
+                        if (Math.sqrt(Math.pow(counterX - xPos, 2) + Math.pow(counterY - yPos, 2)) < width) {
+                            colors[counterX][counterY] = color;
+                        }
+                    }
+                }
+            }
+            speedX = 0;
+            speedY = 0;
         }
         
         @Override
@@ -139,16 +172,16 @@ public class Board {
                 case 1:
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_UP:
-                            shift(0, -speed);
+                            UP = true;
                             break;
                         case KeyEvent.VK_RIGHT:
-                            shift(speed, 0);
+                            RIGHT = true;
                             break;
                         case KeyEvent.VK_DOWN:
-                            shift(0, speed);
+                            DOWN = true;
                             break;
                         case KeyEvent.VK_LEFT:
-                            shift(-speed, 0);
+                            LEFT = true;
                         case KeyEvent.VK_M:
                     }
                     break;
@@ -165,6 +198,32 @@ public class Board {
         
         @Override
         public void keyReleased(KeyEvent e) {
+            switch (mode) {
+                case 1:
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_UP:
+                            UP = false;
+                            break;
+                        case KeyEvent.VK_RIGHT:
+                            RIGHT = false;
+                            break;
+                        case KeyEvent.VK_DOWN:
+                            DOWN = false;
+                            break;
+                        case KeyEvent.VK_LEFT:
+                            LEFT = false;
+                        case KeyEvent.VK_M:
+                    }
+                    break;
+                case 2:
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_E:
+                        case KeyEvent.VK_F:
+                        case KeyEvent.VK_D:
+                        case KeyEvent.VK_S:
+                        case KeyEvent.VK_Q:
+                    }
+            }
         }
         
         @Override
@@ -185,6 +244,17 @@ public class Board {
         
         @Override
         public void mouseExited(MouseEvent e) {
+        }
+        
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    nextIteration(1);
+                    Thread.sleep(SPEED);
+                } catch (InterruptedException ex) {
+                }
+            }
         }
         
     }
