@@ -1,13 +1,13 @@
 
 import game.Board;
-import game.Frame;
 
 public class main {
     public static void main(String[] args){
-        Board board = new Board(800,600);
+        Board board = new Board(600,600);
         board.addPlayer((byte)1);
+        board.addPlayer((byte)2);
         while(true){
-            board.update();
+            board.updateScoreboard();
             board.draw();
         }
     }
