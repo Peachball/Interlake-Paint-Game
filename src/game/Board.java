@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class Board {
+public class Board implements MouseListener {
 
     public static final Color color1 = Color.BLUE;
     public static final Color color2 = Color.GREEN;
@@ -18,7 +18,7 @@ public class Board {
     public static final Color color4 = Color.YELLOW;
     public int SPEED = 10;
 
-    protected Object renderer = new Object();
+    protected final Object renderer = new Object();
 
     public Frame frame;
     byte[][] colors;
@@ -42,7 +42,10 @@ public class Board {
         frame.addKeyListener(buffer);
         new Thread(buffer).start();
         players.add(buffer);
-
+    }
+    
+    public void endGame(byte winner){
+        
     }
 
     public Board(Frame frame) {
@@ -91,6 +94,31 @@ public class Board {
 
     public void draw() {
         frame.display();
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     class PlayerComparator implements Comparator<Player> {
@@ -229,6 +257,23 @@ public class Board {
                             break;
                     }
                     break;
+                case 3:
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_T:
+                            UP = true;
+                            break;
+                        case KeyEvent.VK_H:
+                            RIGHT = true;
+                            break;
+                        case KeyEvent.VK_G:
+                            DOWN = true;
+                            break;
+                        case KeyEvent.VK_F:
+                            LEFT = true;
+                        case KeyEvent.VK_SPACE:
+                            break;
+                    }
+                    break;
             }
         }
 
@@ -270,11 +315,29 @@ public class Board {
                             break;
                     }
                     break;
+                case 3:
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_T:
+                            UP = false;
+                            break;
+                        case KeyEvent.VK_H:
+                            RIGHT = false;
+                            break;
+                        case KeyEvent.VK_G:
+                            DOWN = false;
+                            break;
+                        case KeyEvent.VK_F:
+                            LEFT = false;
+                        case KeyEvent.VK_SPACE:
+                            break;
+                    }
+                    break;
             }
         }
 
         @Override
         public void mouseClicked(MouseEvent e) {
+
         }
 
         @Override
