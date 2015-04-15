@@ -10,23 +10,27 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class Board implements MouseListener {
+public class Board implements MouseListener, KeyListener {
 
     public static final Color color1 = Color.BLUE;
     public static final Color color2 = Color.GREEN;
     public static final Color color3 = Color.ORANGE;
     public static final Color color4 = Color.YELLOW;
     public int SPEED = 10;
+    public long startTime;
+    public long timeLimit;
 
     protected final Object renderer = new Object();
 
     public Frame frame;
-    byte[][] colors;
+    public int colorsX;
+    public int colorsY;
     ArrayList<Player> players;
     boolean gameOn;
 
     public Board(int x, int y) {
-        colors = new byte[x][y];
+        colorsX = x;
+        colorsY = y;
         players = new ArrayList<Player>();
         frame = new Frame("Paint Game", x, y);
         frame.offscreenGame.setColor(Color.WHITE);
@@ -43,13 +47,23 @@ public class Board implements MouseListener {
         new Thread(buffer).start();
         players.add(buffer);
     }
-    
-    public void endGame(byte winner){
-        
+
+    public void endGame(byte winner) {
+
     }
 
     public Board(Frame frame) {
+        colorsX = frame.onscreenImage.getWidth() - 200;
+        colorsY = frame.onscreenImage.getHeight();
         this.frame = frame;
+        frame.offscreen.setColor(Color.WHITE);
+        frame.offscreen.fillRect(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        frame.scoreboard.setColor(Color.BLACK);
+        gameOn = true;
+        players = new ArrayList<Player>();
+        startTime = System.currentTimeMillis();
+        timeLimit = 120000;
+        frame.display();
     }
 
     public void updateScoreboard() {
@@ -85,11 +99,12 @@ public class Board implements MouseListener {
             frame.scoreboard.drawString("GREEN SCORE:" + players.get(1).score, 0, 20);
         }
         if (players.size() > 2) {
-            frame.scoreboard.drawString("GREEN SCORE:" + players.get(2).score, 0, 30);
+            frame.scoreboard.drawString("ORANGE SCORE:" + players.get(2).score, 0, 30);
         }
         if (players.size() > 3) {
-            frame.scoreboard.drawString("GREEN SCORE:" + players.get(3).score, 0, 40);
+            frame.scoreboard.drawString("YELLOW SCORE:" + players.get(3).score, 0, 40);
         }
+        frame.scoreboard.drawString("TIME LEFT: "+(timeLimit-System.currentTimeMillis()+startTime),0,50);
     }
 
     public void draw() {
@@ -119,6 +134,25 @@ public class Board implements MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void keyTyped(KeyEvent ke) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void keyPressed(KeyEvent ke) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void keyReleased(KeyEvent ke) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public boolean isDone() {
+        return System.currentTimeMillis()-startTime>timeLimit;
     }
 
     class PlayerComparator implements Comparator<Player> {
@@ -160,7 +194,7 @@ public class Board implements MouseListener {
             if (xPos + x < 0 || yPos + y < 0) {
                 return;
             }
-            if (xPos + x > colors.length || yPos + y > colors[0].length) {
+            if (xPos + x > colorsX || yPos + y > colorsY) {
                 return;
             }
             xPos += x;
@@ -270,6 +304,7 @@ public class Board implements MouseListener {
                             break;
                         case KeyEvent.VK_F:
                             LEFT = true;
+                            break;
                         case KeyEvent.VK_SPACE:
                             break;
                     }
@@ -328,6 +363,7 @@ public class Board implements MouseListener {
                             break;
                         case KeyEvent.VK_F:
                             LEFT = false;
+                            break;
                         case KeyEvent.VK_SPACE:
                             break;
                     }
